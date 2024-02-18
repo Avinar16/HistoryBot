@@ -27,23 +27,26 @@ def Write(config):
         writer.writerows(config)
 
 
-def SetCurrentGame(tg_id, reset=False):
+def CurrentGame(tg_id, reset=False, add=False):
     with open('top.csv', 'r', encoding='utf-8', newline='') as file:
         reader = csv.DictReader(file, delimiter=',')
         config = list(reader)
         number = 0
         for element in config:
             if element['tg_id'] == tg_id:
-                if not reset:
+                if add:
                     element['current game'] = int(element['current game']) + 1
                     number = int(element['current game'])
                     Write(config)
                     return number
-                else:
+                elif reset:
                     element['current score'] = 0
                     element['current game'] = 0
+                    element['current answer'] = 0
                     Write(config)
                     return 0
+                else:
+                    return element['current game']
 
 
 def GetAnswer(tg_id):

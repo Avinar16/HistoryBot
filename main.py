@@ -12,8 +12,6 @@ import Memory
 load_dotenv()
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
-# Объект бота
-PROXY_URL = "http://proxy.server:3128"
 bot = Bot(token=os.getenv('TOKEN'))
 # Диспетчер
 dp = Dispatcher()
@@ -36,26 +34,29 @@ async def start_game(message: types.Message):
         country.append(i)
         await bot.send_photo(message.chat.id, GetFlagImageURL(country[1]), caption=f"{country[0]} - {i}")
         i += 1
+    Memory.CurrentGame(str(message.from_user.id), add=True)
 
 
 
 @dp.message(lambda message: not message.text.startswith('/'))
 async def cmd_answer(message: types.Message):
-    answer = Memory.GetAnswer(str(message.from_user.id))
-    answer = answer.split(';')
+    game_phase_number = int(Memory.CurrentGame(str(message.from_user.id)))
+    if game_phase_number != 0:
+        answer = Memory.GetAnswer(str(message.from_user.id))
+        answer = answer.split(';')
 
-    if message.text.lower() == answer[0].lower() or message.text == answer[1]:
-        AddScore(str(message.from_user.id))
-        await message.reply(f"Верно! Это {answer[0]}")
-    else:
-        await message.reply(f"Неверно! Правильный ответ- {answer[0]}")
-
-    number = Memory.SetCurrentGame(str(message.from_user.id))
-    if number == 10:
-        await bot.send_message(message.chat.id, f"Вы набрали {Memory.GetCurrentScore(str(message.from_user.id))}/10")
-        Memory.SetCurrentGame(str(message.from_user.id), reset=True)
-    else:
-        await start_game(message)
+        if message.text.lower() == answer[0].lower() or message.text == answer[1]:
+            AddScore(str(message.from_user.id))
+            await message.reply(f"Верно! Это {answer[0]}")
+        else:
+            await message.reply(f"Неверно! Правильный ответ- {answer[0]}")
+        game_phase_number = int(Memory.CurrentGame(str(message.from_user.id)))
+        print(game_phase_number)
+        if game_phase_number >= 10:
+            await bot.send_message(message.chat.id, f"Вы набрали {Memory.GetCurrentScore(str(message.from_user.id))}/10")
+            Memory.CurrentGame(str(message.from_user.id), reset=True)
+        else:
+            await start_game(message)
 
 
 
