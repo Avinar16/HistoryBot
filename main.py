@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from CreateGame import CreateGame
+from background import keep_alive
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 from GetFlag import GetFlagImageURL
@@ -76,4 +77,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    keep_alive()
     asyncio.run(main())
